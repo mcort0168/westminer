@@ -26,9 +26,9 @@ declare that this is location he is traveling to.
   2. The gold that he is carrying will be transferred to his savings, and the amount of gold he is carrying on his
 person will return to zero. He will declare that he is making a deposit, and the total amount of savings he has will be 
 declared.
-  3. If he has not aquired a satisfactory increase in his savings, he will return to first state and search for more 
+  3. If he has not aquired a satisfactory increase in his savings, he will return to first state and search for more
 gold.
-  4. If he has aquired a satisfactory increase in his savings, he will aknowledge his contentment and declare that he 
+  4. If he has aquired a satisfactory increase in his savings, he will aknowledge his contentment and declare that he
 is heading home, and then enter the third state "Going Home to Rest".
 
 3. Going Home to Rest 
@@ -52,6 +52,32 @@ everytime he drinks. When he does this he declares he's having a drink.
   5. If his thirst is quenched and his pockets are not full, but he is tired, he will go home and rest.
   6. If his thirst is quenched and his pockets are not full and he is not tired, he will change his state to digging 
 for gold.
+
+5. Go Shopping
+  1. When he enters the state he declares he is going shopping for a new pickax and the miner's location changes from
+  it's old value to be 'shop' instead.
+  2. While he is shopping his fatigue will increase and he will then proceed to choose between buying a normal pickax
+  or a big pick ax depending on how much gold he has in the bank and how strong his current pickax is.
+  3. If he has more than ten gold and his current pickax has a strength less than three he will buy a normal pickax and
+  the value of gold in his bank account will decrease by ten.
+  4. If he has more than fifteen gold and his current pickax has a strength lass then four he will buy a big pickax and
+  the value of gold he has in his bank account will decrease by fifteen.
+  5. Once he has bought himself a new pickax he will then change states to go try out his new pickax by going directly
+  to the gold mine.
+
+Items
+Along with various states there are items the miner can use to alter certain stats or occurrences that happen during
+the state he is in. The items themselves are classes which hold inside them the variables for the items that affect the
+miner in someway. This makes it easy to create new items without having to alter to much in the other files.
+
+1. Pickax
+  1. The pickax contains several stats: a name, strength, luck, and an id.
+  2. The name is necessary for the miner to state which pickax he currently has or is equipping when entering the mine.
+  3. The strength stat adds onto the miner's current strength stat influencing his ability in battle.
+  4. The luck stat influences the miner's rate at finding gold.
+  5. The id stat is mostly just there to keep track of the pickax's and could be substituted in if the strength stats
+  get larger or the variety of pickaxes increase.
+
 
 The goal of this project is to make improvements and implement new features to this program to make it more complex.
 Some of these include, but are not limited to:

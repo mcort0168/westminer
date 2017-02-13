@@ -1,5 +1,7 @@
 import random
 
+import items
+
 class State:
     def enter(self):
         raise NotImplementedError
@@ -14,11 +16,12 @@ class State:
 class EnterMineAndDigForNugget(State):
     def enter(self, miner):
         if miner.location != 'goldmine':
-            print("Miner {}: Walkin' to the gold mine".format(miner.name))
+            print("Miner {}: Walkin' to the gold mine.".format(miner.name))
+            print("Miner {}: I'm equippin' mah {}".format(miner.name, miner.pickax.name))
             miner.location = 'goldmine'
 
     def execute(self, miner):
-        r = random.random()
+        r = random.random() - miner.pickax.luck
         if r < 0.25:
             miner.gold_carried += 4
             miner.fatigue += 1
@@ -60,9 +63,19 @@ class VisitBankAndDepositGold(State):
         miner.gold_carried = 0
         print("Miner {}: Depostin' gold. Total savings now: {}".format(miner.name,
                                                                        miner.gold_bank))
-        if miner.gold_bank > 4:
+        if miner.gold_bank > 50:
             print("Miner {}: Woohoo! Rich enough for now. Back home to mah li'l lady".format(miner.name))
             miner.change_state(go_home_and_sleep_till_rested)
+        if miner.gold_bank >= 10:
+            if miner.pickax.strength < 3:
+                miner.change_state(go_shopping)
+            else:
+                pass
+        if miner.gold_bank >= 15:
+            if miner.pickax.strength < 4:
+                miner.change_state(go_shopping)
+            else:
+                pass
         else:
             miner.change_state(enter_mine_and_dig_for_nugget)
 
@@ -73,11 +86,11 @@ class VisitBankAndDepositGold(State):
 class GoHomeAndSleepTillRested(State):
     def enter(self, miner):
         if miner.location != 'home':
-            print("Miner{}: Going Home to see my lil' lady".format(miner.name))
+            print("Miner {}: Going Home to see my lil' lady".format(miner.name))
             miner.location = 'home'
 
     def execute(self, miner):
-        miner.fatigue -= 1
+        miner.fatigue -= 4
         miner.thirst += 1
         if miner.is_tired():
             miner.change_state(go_home_and_sleep_till_rested)
@@ -113,9 +126,38 @@ class QuenchThirst(State):
 
     def exit(self, miner):
         print("Miner {}: Gotta Get back to it!".format(miner.name))
-        
+
+class GoShopping(State):
+    def enter(self,miner):
+        if miner.location != "shop":
+            print("Miner {}: Woohoo time to go shoppin' for a new pickax!".format(miner.name))
+            miner.location = "shop"
+
+    def execute(self,miner):
+        miner.fatigue += 1
+        print("Miner {}: Let's see which one should ah' choose?".format(miner.name))
+        if miner.gold_bank >= 10:
+            if miner.pickax.strength < 3:
+                miner.pickax = items.pickax
+                print("Miner {}: woohoo I got me a brand spankin' new pickax!".format(miner.name))
+                miner.gold_bank -= 10
+            else:
+                pass
+        if miner.gold_bank >= 15:
+            if miner.pickax.strength < 4:
+                miner.pickax = items.big_pickax
+                print("Miner {}: Alrighty I'll be swimmin' in gold now that I got me a big pickax!".format(miner.name))
+                miner.gold_bank -= 15
+            else:
+                pass
+        else:
+            miner.change_state(enter_mine_and_dig_for_nugget)
+
+    def exit(self,miner):
+        print("Miner {}: Can't wait to try out my new {}".format(miner.name, miner.pickax.name))
 
 enter_mine_and_dig_for_nugget = EnterMineAndDigForNugget()
 visit_bank_and_deposit_gold = VisitBankAndDepositGold()
 go_home_and_sleep_till_rested = GoHomeAndSleepTillRested()
 quench_thirst = QuenchThirst()
+go_shopping = GoShopping()

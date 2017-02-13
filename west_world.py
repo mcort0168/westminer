@@ -1,7 +1,7 @@
 import time
 
 import states
-
+import items
 
 class BaseGameEntity:
     id = 0
@@ -16,7 +16,7 @@ class Miner(BaseGameEntity):
 
     """
 
-    def __init__(self, name, current_state, location, gold_carried, gold_bank, thirst, fatigue):
+    def __init__(self, name, current_state, location, gold_carried, gold_bank, thirst, fatigue, build, pickax):
         super(Miner, self).__init__()
         self.name = name
         self.current_state = current_state
@@ -25,7 +25,17 @@ class Miner(BaseGameEntity):
         self.gold_bank = gold_bank
         self.thirst = thirst
         self.fatigue = fatigue
-        self.max_nuggets = 5
+        self.max_nuggets = 7
+        self.pickax = pickax
+        if build == "lanky":
+            self.health = 30
+            self.strength = 3 + self.pickax.strength
+        if build == "normal":
+            self.health = 50
+            self.strength = 5 + self.pickax.strength
+        if build == "bulky":
+            self.health = 70
+            self. strength = 7 + self.pickax.strength
 
     def update(self):
         self.thirst += 1
@@ -62,14 +72,18 @@ if __name__ == '__main__':
                        0,
                        0,
                        0,
-                       0)
+                       0,
+                       "bulky",
+                       items.small_pickax)
     other_miner = Miner('Sam',
                        states.enter_mine_and_dig_for_nugget,
                        'home',
                        1,
                        10,
                        0,
-                       0)
+                       0,
+                       "lanky",
+                        items.small_pickax)
 
     game_objects = [real_miner, other_miner]
     counter = 0
