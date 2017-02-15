@@ -82,7 +82,6 @@ class Wife(BaseGameEntity):
         self.max_cups = 2
         self.lunch_made=lunch_made
         self.max_shirts = 3
-        self.dishes_max = 6
 
     def update(self):
         self.fatigue+=1
@@ -107,12 +106,6 @@ class Wife(BaseGameEntity):
 
     def shirts_clean(self):
         if self.shirts_ironed == self.max_shirts:
-            return True
-        else:
-            return False
-
-    def dishes_clean(self):
-        if self.dishes_washed == self.dishes_max:
             return True
         else:
             return False
