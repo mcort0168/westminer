@@ -70,7 +70,7 @@ class Miner(BaseGameEntity):
 
 class Wife(BaseGameEntity):
 
-    def __init__(self, name, wife_state, location, fatigue, dishes_washed, shirts_ironed, cups_made):
+    def __init__(self, name, wife_state, location, fatigue, dishes_washed, shirts_ironed, cups_made, lunch_made):
         super(Wife, self).__init__()
         self.name=name
         self.wife_state=wife_state
@@ -80,6 +80,9 @@ class Wife(BaseGameEntity):
         self.shirts_ironed=shirts_ironed
         self.cups_made = cups_made
         self.max_cups = 2
+        self.lunch_made=lunch_made
+        self.max_shirts = 3
+        self.dishes_max = 6
 
     def update(self):
         self.fatigue+=1
@@ -101,6 +104,19 @@ class Wife(BaseGameEntity):
             return True
         else:
             return False
+
+    def shirts_clean(self):
+        if self.shirts_ironed == self.max_shirts:
+            return True
+        else:
+            return False
+
+    def dishes_clean(self):
+        if self.dishes_washed == self.dishes_max:
+            return True
+        else:
+            return False
+
 
 if __name__ == '__main__':
     real_miner = Miner('Bob',
@@ -125,6 +141,7 @@ if __name__ == '__main__':
     miner_wife = Wife('Deloris',
                       states.wake_up_and_make_coffee,
                       'home',
+                      0,
                       0,
                       0,
                       0,
