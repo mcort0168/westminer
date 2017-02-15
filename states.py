@@ -193,7 +193,7 @@ class GoShopping(State):
 class WakeUpAndMakeCoffee(State):
     def enter(self, wife):
         if wife.location != 'home':
-            print("{}: Gotta head home and make some coffee for my ol' man.".format(wife.name))
+            print("{}: Time to make some coffee for my ol' man.".format(wife.name))
             wife.location = 'home'
 
     def execute(self, wife):
@@ -203,11 +203,13 @@ class WakeUpAndMakeCoffee(State):
             wife.wife_change_state(wash_bfast_dishes)
         if wife.tired():
             wife.wife_change_state(wife_nap)
+        else:
+            wife.wife_change_state(iron_shirts)
 
     def exit(self, wife):
         print("{}: That was some delicious breakfast!".format(wife.name))
 
-class WashBfastDishes(State):
+class WashDishes(State):
 
     def enter(self, wife):
         print("{}: I tell ya, I made a mess!".format(wife.name))
@@ -224,10 +226,42 @@ class WashBfastDishes(State):
     def exit(self, wife):
         print("{}: Ah, ain't nothin' better than a clean kitchen".format(wife.name))
 
+class IronShirts(State):
+
+    def enter(self, wife):
+        wife.fatigue += 1
+        print ("{}: Ole dirty Bob needs some clean, ironed shirts. Diggin' fer nuggets makes'em dirty!".format(wife.name))
+        wife.location='home'
+
+    def execute(self, wife):
+        print ("{}: Two 'er three shirts will be enough.".format(wife.name))
+        if wife.shirts_clean():
+            wife.wife_change_state(make_lunch)
+        else:
+            wife.wife_change_state(wife_nap)
+
+    def exit(self, wife):
+        print("{}: Alrighty, Bob will look real nice when he heads to work now!".format(wife.name))
+
+class MakeLunch(State):
+
+    def enter(self, wife):
+        wife.fatigue += 1
+        print ("{}: Gettin' a lil' hungry. I'm sure Bob would like some lunch too.".format(wife.name))
+        wife.location='home'
+
+    def execute(self, wife):
+        print("{}: I think some meatloaf sounds right nice!".format(wife.name))
+        if wife.lunch_made():
+            wife.wife_change_state(wash_dishes)
+
+    def exit(self, wife):
+        print ("{}: The day sure is movin' right along.".format(wife.name))
+
 class WifeNap(State):
 
     def enter(self, wife):
-        print("{}: Whew, keepin' up a house is hard work!".format(wife.name))
+        print("{}: Whew, keepin' up a house is hard work! Time fer a nap".format(wife.name))
         wife.location = 'home'
 
     def execute(self, wife):
@@ -246,5 +280,7 @@ quench_thirst = QuenchThirst()
 jail = Jail()
 go_shopping = GoShopping()
 wake_up_and_make_coffee = WakeUpAndMakeCoffee()
-wash_bfast_dishes = WashBfastDishes()
+wash_dishes = WashDishes()
 wife_nap = WifeNap()
+iron_shirts=IronShirts()
+make_lunch=MakeLunch()
