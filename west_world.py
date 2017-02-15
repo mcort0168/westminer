@@ -1,5 +1,5 @@
 import time
-
+import random
 import states
 import items
 
@@ -10,6 +10,70 @@ class BaseGameEntity:
     def __init__(self):
         self.id = BaseGameEntity.id
         BaseGameEntity.id += 1
+
+class Plant(BaseGameEntity):
+    def __init__(self, location, lifespan):
+        super(Plant, self).__init__()
+        self.location = location
+        self.lifespan = lifespan
+
+    def update(self):
+        self.lifespan -= 1
+        if self.lifespan == 0:
+            self.die()
+
+    def die(self):
+        if plant1 in game_objects:
+            game_objects.remove(plant1)
+        if plant2 in game_objects:
+            game_objects.remove(plant2)
+        if plant3 in game_objects:
+            game_objects.remove(plant3)
+        if plant4 in game_objects:
+            game_objects.remove(plant4)
+
+
+class PoisonPlant(Plant):
+    def __init__(self, location, lifespan, name, condition):
+        super(PoisonPlant, self).__init__(location, lifespan)
+        self.name = name
+        self.condition = condition
+
+    def debuff(condition):
+        if plant1 in game_objects:
+            Miner.thirst + 4
+            Miner.fatigue + 4
+
+class EnergyPlant(Plant):
+    def __init__(self, location, lifespan, name, condition):
+        super(EnergyPlant, self).__init__(location, lifespan)
+        self.name = name
+        self.condition = condition
+
+    def buff(condition):
+        if plant2 in game_objects:
+            Miner.fatigue - 3
+
+class LiquidPlant(Plant):
+    def __init__(self, location, lifespan, name, condition):
+        super(LiquidPlant, self).__init__(location, lifespan)
+        self.name = name
+        self.condition = condition
+
+    def buff(condition):
+        if plant4 in game_objects:
+            Miner.thirst - 3
+
+class UltraPlant(Plant):
+    def __init__(self, location, lifespan, name, condition):
+        super(UltraPlant, self).__init__(location, lifespan)
+        self.name = name
+        self.condition = condition
+
+    def buff(condition):
+        if plant3 in game_objects:
+            Miner.thirst - 5
+            Miner.fatigue - 5
 
 
 class Miner(BaseGameEntity):
@@ -130,11 +194,28 @@ if __name__ == '__main__':
                       0,
                       0)
 
+    plant1 = PoisonPlant('mine', 30, 'Poison Mushroom', 'Tired and Thirsty')
+    plant2 = EnergyPlant('mine', 30, 'Super Mushroom', 'Energetic')
+    plant3 = UltraPlant('mine', 30, 'Star Fruit', 'DANKNESS')
+    plant4 = LiquidPlant('mine', 30, 'Snowbell Flower', 'Soothing')
     game_objects = [real_miner, other_miner, miner_wife]
     counter = 0
+    plant_chance = [0, 1, 2, 3, 4, 5]
     while counter < 50:
         print("Game tick {}".format(counter))
         for obj in game_objects:
             obj.update()
         time.sleep(0.5)
         counter += 1
+        if random.choice(plant_chance) == 5 and counter % 5 == 0:
+            game_objects.append(plant1)
+            print("This looks safe to eat! Nope, wait, nevermind.".format(real_miner.name))
+        if random.choice(plant_chance) == 1 or 4 and counter % 3 == 0:
+            game_objects.append(plant2)
+            print("I can hear colors now!".format(real_miner.name))
+        if random.choice(plant_chance) == 2 and counter % 6 == 0:
+            game_objects.append(plant3)
+            print("The fruit of the gods!".format(real_miner.name))
+        if random.choice(plant_chance) == 0 or 3 and counter % 3 == 0:
+            game_objects.append(plant4)
+            print("How purtty!".format(real_miner.name))
