@@ -11,6 +11,7 @@ class BaseGameEntity:
         self.id = BaseGameEntity.id
         BaseGameEntity.id += 1
 
+
 class Plant(BaseGameEntity):
     def __init__(self, location, lifespan):
         super(Plant, self).__init__()
@@ -131,6 +132,7 @@ class Miner(BaseGameEntity):
             return True
         else:
             return False
+
 
 class Wife(BaseGameEntity):
 

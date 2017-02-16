@@ -161,6 +161,7 @@ class Jail(State):
         print("Miner {}: I'm bustin' outta this joint!".format(miner.name))
         print("Miner {}: Gotta Get back to it!".format(miner.name))
 
+
 class GoShopping(State):
     def enter(self, miner):
         if miner.location != "shop":
@@ -190,6 +191,7 @@ class GoShopping(State):
     def exit(self, miner):
         print("Miner {}: Can't wait to try out my new {}".format(miner.name, miner.pickax.name))
 
+
 class WakeUpAndMakeCoffee(State):
     def enter(self, wife):
         if wife.location != 'home':
@@ -209,6 +211,7 @@ class WakeUpAndMakeCoffee(State):
     def exit(self, wife):
         print("{}: That was some delicious breakfast!".format(wife.name))
 
+
 class WashDishes(State):
 
     def enter(self, wife):
@@ -225,6 +228,7 @@ class WashDishes(State):
 
     def exit(self, wife):
         print("{}: Ah, ain't nothin' better than a clean kitchen".format(wife.name))
+
 
 class IronShirts(State):
 
@@ -243,6 +247,7 @@ class IronShirts(State):
     def exit(self, wife):
         print("{}: Alrighty, Bob will look real nice when he heads to work now!".format(wife.name))
 
+
 class MakeLunch(State):
 
     def enter(self, wife):
@@ -257,6 +262,7 @@ class MakeLunch(State):
 
     def exit(self, wife):
         print ("{}: The day sure is movin' right along.".format(wife.name))
+
 
 class WifeNap(State):
 
@@ -282,5 +288,5 @@ go_shopping = GoShopping()
 wake_up_and_make_coffee = WakeUpAndMakeCoffee()
 wash_dishes = WashDishes()
 wife_nap = WifeNap()
-iron_shirts=IronShirts()
-make_lunch=MakeLunch()
+iron_shirts = IronShirts()
+make_lunch = MakeLunch()
