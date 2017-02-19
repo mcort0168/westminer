@@ -1,9 +1,9 @@
 class BaseGameEntity:
-    id = 0
+    eid = 0
 
     def __init__(self, world):
-        self.id = BaseGameEntity.id
-        BaseGameEntity.id += 1
+        self.eid = BaseGameEntity.eid
+        BaseGameEntity.eid += 1
         self.world = world
 
 
