@@ -1,4 +1,4 @@
-from . import BaseGameEntity
+from . import BaseGameEntity, StateMachine
 
 
 class Miner(BaseGameEntity):
@@ -6,10 +6,9 @@ class Miner(BaseGameEntity):
 
     """
 
-    def __init__(self, world, name, current_state, location, gold_carried, gold_bank, thirst, fatigue, build, pickax):
+    def __init__(self, world, name, state_global, state_current, state_previous, location, gold_carried, gold_bank, thirst, fatigue, build, pickax):
         super(Miner, self).__init__(world)
         self.name = name
-        self.current_state = current_state
         self.location = location
         self.gold_carried = gold_carried
         self.gold_bank = gold_bank
@@ -28,15 +27,12 @@ class Miner(BaseGameEntity):
         if build == "bulky":
             self.health = 70
             self.strength = 7 + self.pickax.strength
+        state_machine = StateMachine(self, state_global, state_current, state_previous)
+        self.state_machine = state_machine
 
     def update(self):
         self.thirst += 1
-        self.current_state.execute(self)
-
-    def change_state(self, new_state):
-        self.current_state.exit(self)
-        self.current_state = new_state
-        self.current_state.enter(self)
+        self.state_machine.update(self)
 
     def pockets_full(self):
         if self.gold_carried > self.max_nuggets:

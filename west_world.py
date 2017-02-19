@@ -14,6 +14,8 @@ if __name__ == '__main__':
     real_miner = Miner(world,
                        'Bob',
                        states.enter_mine_and_dig_for_nugget,
+                       states.enter_mine_and_dig_for_nugget,
+                       states.enter_mine_and_dig_for_nugget,
                        'home',
                        0,
                        0,
@@ -23,6 +25,8 @@ if __name__ == '__main__':
                        items.small_pickax)
     other_miner = Miner(world,
                         'Sam',
+                        states.enter_mine_and_dig_for_nugget,
+                        states.enter_mine_and_dig_for_nugget,
                         states.enter_mine_and_dig_for_nugget,
                         'home',
                         1,
@@ -34,6 +38,8 @@ if __name__ == '__main__':
 
     miner_wife = Wife(world,
                       'Deloris',
+                      states.wake_up_and_make_coffee,
+                      states.wake_up_and_make_coffee,
                       states.wake_up_and_make_coffee,
                       'home',
                       0,
@@ -51,12 +57,32 @@ if __name__ == '__main__':
         counter += 1
         plant_roll = random.choice(plant_chance)
         if plant_roll == 5 and counter % 5 == 0:
-            world.entities.append(PoisonPlant(world, 'mine', 30, 'Poison Mushroom', 'Tired and Thirsty'))
+            world.entities.append(PoisonPlant(world,
+                                              None, None, None,
+                                              'mine',
+                                              30,
+                                              'Poison Mushroom',
+                                              'Tired and Thirsty'))
             print("This looks safe to eat! Nope, wait, nevermind.".format(real_miner.name))
         if plant_roll in [1, 4] and counter % 3 == 0:
-            world.entities.append(EnergyPlant(world, 'mine', 30, 'Super Mushroom', 'Energetic'))
+            world.entities.append(EnergyPlant(world,
+                                              None, None, None,
+                                              'mine',
+                                              30,
+                                              'Super Mushroom',
+                                              'Energetic'))
             print("I can hear colors now!".format(real_miner.name))
         if plant_roll == 2 and counter % 6 == 0:
-            world.entities.append(UltraPlant(world, 'mine', 30, 'Star Fruit', 'DANKNESS'))
+            world.entities.append(UltraPlant(world,
+                                             None, None, None,
+                                             'mine',
+                                             30,
+                                             'Star Fruit',
+                                             'DANKNESS'))
         if plant_roll in [0, 3] and counter % 3 == 0:
-            world.entities.append(LiquidPlant(world, 'mine', 30, 'Snowbell Flower', 'Soothing'))
+            world.entities.append(LiquidPlant(world,
+                                              None, None, None,
+                                              'mine',
+                                              30,
+                                              'Snowbell Flower',
+                                              'Soothing'))

@@ -4,13 +4,13 @@ import items
 
 
 class State:
-    def enter(self):
+    def enter(self, entity):
         raise NotImplementedError
 
-    def execute(self):
+    def execute(self, entity):
         raise NotImplementedError
 
-    def exit(self):
+    def exit(self, entity):
         raise NotImplementedError
 
 
@@ -45,9 +45,9 @@ class EnterMineAndDigForNugget(State):
             print("Miner {}: NO NUGGETS!? I'm gonna be here all day at this rate".format(miner.name))
 
         if miner.pockets_full():
-            miner.change_state(visit_bank_and_deposit_gold)
+            miner.state_machine.change_state(visit_bank_and_deposit_gold)
         elif miner.thirsty():
-            miner.change_state(quench_thirst)
+            miner.state_machine.change_state(quench_thirst)
 
     def exit(self, miner):
         print("Miner {}: Ah'm leavin' the gold mine with mah pockets full o'sweet gold".format(miner.name))
@@ -66,24 +66,24 @@ class VisitBankAndDepositGold(State):
                                                                        miner.gold_bank))
         if miner.gold_bank > 10:
             print("Miner {}: Woohoo! Rich enough for now. Back home to mah li'l lady".format(miner.name))
-            miner.change_state(go_home_and_sleep_till_rested)
+            miner.state_machine.change_state(go_home_and_sleep_till_rested)
         elif miner.thirsty():
-            miner.change_state(quench_thirst)
+            miner.state_machine.change_state(quench_thirst)
         if miner.gold_bank > 50:
             print("Miner {}: Woohoo! Rich enough for now. Back home to mah li'l lady".format(miner.name))
             miner.change_state(go_home_and_sleep_till_rested)
         if miner.gold_bank >= 10:
             if miner.pickax.strength < 3:
-                miner.change_state(go_shopping)
+                miner.state_machine.change_state(go_shopping)
             else:
                 pass
         if miner.gold_bank >= 15:
             if miner.pickax.strength < 4:
-                miner.change_state(go_shopping)
+                miner.state_machine.change_state(go_shopping)
             else:
                 pass
         else:
-            miner.change_state(enter_mine_and_dig_for_nugget)
+            miner.state_machine.change_state(enter_mine_and_dig_for_nugget)
 
     def exit(self, miner):
         print("Miner {}: Leavin' the bank".format(miner.name))
@@ -99,11 +99,11 @@ class GoHomeAndSleepTillRested(State):
         miner.fatigue -= 4
         miner.thirst += 1
         if miner.is_tired():
-            miner.change_state(go_home_and_sleep_till_rested)
+            miner.state_machine.change_state(go_home_and_sleep_till_rested)
             print("Miner {}: Just 5 more minutes...".format(miner.name))
-            miner.change_state(quench_thirst)
+            miner.state_machine.change_state(quench_thirst)
         else:
-            miner.change_state(enter_mine_and_dig_for_nugget)
+            miner.state_machine.change_state(enter_mine_and_dig_for_nugget)
 
     def exit(self, miner):
         print("Miner {}: Good mornin'! Another day, another nugget!".format(miner.name))
@@ -119,7 +119,7 @@ class QuenchThirst(State):
         if miner.gold_carried == 0:
             print("Barkeep: You dirty bum, I'm callin' the sheriff!")
             miner.status = 'arrested'
-            miner.change_state(jail)
+            miner.state_machine.change_state(jail)
         else:
             print("Miner {}: That's some fine sippin' liquer.".format(miner.name))
             miner.fatigue += 1
@@ -128,11 +128,11 @@ class QuenchThirst(State):
             print("Miner {}: Whew! That really wet my whistle".format(miner.name))
 
             if miner.is_tired():
-                miner.change_state(go_home_and_sleep_till_rested)
+                miner.state_machine.change_state(go_home_and_sleep_till_rested)
             elif miner.pockets_full():
-                miner.change_state(visit_bank_and_deposit_gold)
+                miner.state_machine.change_state(visit_bank_and_deposit_gold)
             else:
-                miner.change_state(enter_mine_and_dig_for_nugget)
+                miner.state_machine.change_state(enter_mine_and_dig_for_nugget)
 
     def exit(self, miner):
         if miner.status == 'arrested':
@@ -153,7 +153,7 @@ class Jail(State):
         print("Miner {}: Sittin' in jail".format(miner.name))
         miner.counter_jail += 1
         if miner.counter_jail >= 3:
-            miner.change_state(enter_mine_and_dig_for_nugget)
+            miner.state_machine.change_state(enter_mine_and_dig_for_nugget)
 
     def exit(self, miner):
         miner.counter_jail = 0
@@ -186,7 +186,7 @@ class GoShopping(State):
             else:
                 pass
         else:
-            miner.change_state(enter_mine_and_dig_for_nugget)
+            miner.state_machine.change_state(enter_mine_and_dig_for_nugget)
 
     def exit(self, miner):
         print("Miner {}: Can't wait to try out my new {}".format(miner.name, miner.pickax.name))
@@ -202,11 +202,11 @@ class WakeUpAndMakeCoffee(State):
         wife.fatigue += 1
         print ("{}: Coffee keeps me goin' fer my chores.".format(wife.name))
         if wife.coffee_made():
-            wife.wife_change_state(wash_dishes)
+            wife.state_machine.change_state(wash_dishes)
         if wife.tired():
-            wife.wife_change_state(wife_nap)
+            wife.state_machine.change_state(wife_nap)
         else:
-            wife.wife_change_state(iron_shirts)
+            wife.state_machine.change_state(iron_shirts)
 
     def exit(self, wife):
         print("{}: That was some delicious breakfast!".format(wife.name))
@@ -222,9 +222,9 @@ class WashDishes(State):
         wife.fatigue += 1
         print ("{}: I don't mind washin' these here dishes, anything for my fella.".format(wife.name))
         if wife.dishes_clean():
-            wife.wife_change_state(iron_shirts)
+            wife.state_machine.change_state(iron_shirts)
         if wife.fatigue():
-            wife.wife_change_state(wife_nap)
+            wife.state_machine.change_state(wife_nap)
 
     def exit(self, wife):
         print("{}: Ah, ain't nothin' better than a clean kitchen".format(wife.name))
@@ -240,9 +240,9 @@ class IronShirts(State):
     def execute(self, wife):
         print ("{}: Two 'er three shirts will be enough.".format(wife.name))
         if wife.shirts_clean():
-            wife.wife_change_state(make_lunch)
+            wife.state_machine.change_state(make_lunch)
         else:
-            wife.wife_change_state(wife_nap)
+            wife.state_machine.change_state(wife_nap)
 
     def exit(self, wife):
         print("{}: Alrighty, Bob will look real nice when he heads to work now!".format(wife.name))
@@ -258,7 +258,7 @@ class MakeLunch(State):
     def execute(self, wife):
         print("{}: I think some meatloaf sounds right nice!".format(wife.name))
         if wife.lunch_made():
-            wife.wife_change_state(wash_dishes)
+            wife.state_machine.change_state(wash_dishes)
 
     def exit(self, wife):
         print ("{}: The day sure is movin' right along.".format(wife.name))
@@ -274,7 +274,7 @@ class WifeNap(State):
         wife.fatigue -= 0
         if wife.fatigue > 7:
             print("{}: ...zzz...".format(wife.name))
-            wife.wife_change_state(wake_up_and_make_coffee)
+            wife.state_machine.change_state(wake_up_and_make_coffee)
 
     def exit(self, wife):
         pass
