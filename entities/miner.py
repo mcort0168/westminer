@@ -6,7 +6,7 @@ class Miner(BaseGameEntity):
 
     """
 
-    def __init__(self, world, name, state_global, state_current, state_previous, location, gold_carried, gold_bank, thirst, fatigue, build, pickax):
+    def __init__(self, world, name, state_global, state_current, state_previous, location, gold_carried, gold_bank, thirst, fatigue, build, pickax, wife=None):
         super(Miner, self).__init__(world)
         self.name = name
         self.location = location
@@ -29,10 +29,14 @@ class Miner(BaseGameEntity):
             self.strength = 7 + self.pickax.strength
         state_machine = StateMachine(self, state_global, state_current, state_previous)
         self.state_machine = state_machine
+        self.wife = wife
 
     def update(self):
         self.thirst += 1
         self.state_machine.update(self)
+
+    def handle_message(self, telegram):
+        self.state_machine.handle_message(telegram)
 
     def pockets_full(self):
         if self.gold_carried > self.max_nuggets:

@@ -3,7 +3,7 @@ from . import BaseGameEntity, StateMachine
 
 class Wife(BaseGameEntity):
 
-    def __init__(self, world, name, state_global, state_current, state_previous, location, fatigue, dishes_washed, shirts_ironed, cups_made, lunch_made):
+    def __init__(self, world, name, state_global, state_current, state_previous, location, fatigue, dishes_washed, shirts_ironed, cups_made, lunch_made, husband=None):
         super(Wife, self).__init__(world)
         self.name = name
         self.location = location
@@ -16,10 +16,15 @@ class Wife(BaseGameEntity):
         self.max_shirts = 3
         state_machine = StateMachine(self, state_global, state_current, state_previous)
         self.state_machine = state_machine
+        self.husband = husband
+        self.cooking = False
 
     def update(self):
         self.fatigue += 1
         self.state_machine.update(self)
+
+    def handle_message(self, telegram):
+        self.state_machine.handle_message(telegram)
 
     def tired(self):
         if self.fatigue > 4:

@@ -6,11 +6,23 @@ from world import World
 from entities.miner import Miner
 from entities.wife import Wife
 from entities.plant import PoisonPlant, EnergyPlant, UltraPlant, LiquidPlant
-
+from entities import MessageDispatcher
 
 if __name__ == '__main__':
     world = World('westworld')
+    dispatcho = MessageDispatcher(world)
 
+    miner_wife = Wife(world,
+                      'Deloris',
+                      states.wife_global,
+                      states.wake_up_and_make_coffee,
+                      states.wake_up_and_make_coffee,
+                      'home',
+                      0,
+                      0,
+                      0,
+                      0,
+                      False)
     real_miner = Miner(world,
                        'Bob',
                        states.enter_mine_and_dig_for_nugget,
@@ -22,7 +34,9 @@ if __name__ == '__main__':
                        0,
                        0,
                        "bulky",
-                       items.small_pickax)
+                       items.small_pickax,
+                       miner_wife)
+    miner_wife.husband = real_miner
     other_miner = Miner(world,
                         'Sam',
                         states.enter_mine_and_dig_for_nugget,
@@ -36,22 +50,12 @@ if __name__ == '__main__':
                         "lanky",
                         items.small_pickax)
 
-    miner_wife = Wife(world,
-                      'Deloris',
-                      states.wake_up_and_make_coffee,
-                      states.wake_up_and_make_coffee,
-                      states.wake_up_and_make_coffee,
-                      'home',
-                      0,
-                      0,
-                      0,
-                      0,
-                      0)
     world.entities.extend([real_miner, other_miner, miner_wife])
     counter = 0
     plant_chance = [0, 1, 2, 3, 4, 5]
     while counter < 50:
         print("Game tick {}".format(counter))
+        world.dispatcher.dispatch_delayed()
         world.update()
         time.sleep(0.5)
         counter += 1

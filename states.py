@@ -1,9 +1,13 @@
+from datetime import datetime, timedelta
 import random
 
 import items
 
 
 class State:
+    def __init__(self, handler=False):
+        self.handler = handler
+
     def enter(self, entity):
         raise NotImplementedError
 
@@ -15,6 +19,9 @@ class State:
 
 
 class EnterMineAndDigForNugget(State):
+    def __init__(self, handler=False):
+        super(EnterMineAndDigForNugget, self).__init__(handler=handler)
+
     def enter(self, miner):
         if miner.location != 'goldmine':
             print("Miner {}: Walkin' to the gold mine.".format(miner.name))
@@ -54,6 +61,9 @@ class EnterMineAndDigForNugget(State):
 
 
 class VisitBankAndDepositGold(State):
+    def __init__(self, handler=False):
+        super(VisitBankAndDepositGold, self).__init__(handler=handler)
+
     def enter(self, miner):
         if miner.location != 'bank':
             print("Miner {}: Goin' to the bank. Yes siree".format(miner.name))
@@ -71,7 +81,7 @@ class VisitBankAndDepositGold(State):
             miner.state_machine.change_state(quench_thirst)
         if miner.gold_bank > 50:
             print("Miner {}: Woohoo! Rich enough for now. Back home to mah li'l lady".format(miner.name))
-            miner.change_state(go_home_and_sleep_till_rested)
+            miner.state_machine.change_state(go_home_and_sleep_till_rested)
         if miner.gold_bank >= 10:
             if miner.pickax.strength < 3:
                 miner.state_machine.change_state(go_shopping)
@@ -90,10 +100,17 @@ class VisitBankAndDepositGold(State):
 
 
 class GoHomeAndSleepTillRested(State):
+    def __init__(self, handler=False):
+        super(GoHomeAndSleepTillRested, self).__init__(handler=handler)
+
     def enter(self, miner):
         if miner.location != 'home':
-            print("Miner {}: Going Home to see my lil' lady".format(miner.name))
             miner.location = 'home'
+            if miner.wife is not None:
+                print("Miner {}: Going Home to see my lil' lady".format(miner.name))
+                miner.world.dispatcher.dispatch(0, miner, miner.wife, 'HiHoneyImHome')
+            else:
+                print("Miner {}: Going Home!".format(miner.name))
 
     def execute(self, miner):
         miner.fatigue -= 4
@@ -110,6 +127,9 @@ class GoHomeAndSleepTillRested(State):
         
 
 class QuenchThirst(State):
+    def __init__(self, handler=False):
+        super(QuenchThirst, self).__init__(handler=handler)
+
     def enter(self, miner):
         if miner.location != 'saloon':
             print("Miner {}: So thirsty! I'ma go get me a cold one".format(miner.name))
@@ -142,6 +162,9 @@ class QuenchThirst(State):
 
 
 class Jail(State):
+    def __init__(self, handler=False):
+        super(Jail, self).__init__(handler=handler)
+
     def enter(self, miner):
         if miner.location != 'jail':
             print("Miner {}: Mama always said I'd end up here".format(miner.name))
@@ -163,6 +186,9 @@ class Jail(State):
 
 
 class GoShopping(State):
+    def __init__(self, handler=False):
+        super(GoShopping, self).__init__(handler=handler)
+
     def enter(self, miner):
         if miner.location != "shop":
             print("Miner {}: Woohoo time to go shoppin' for a new pickax!".format(miner.name))
@@ -193,6 +219,9 @@ class GoShopping(State):
 
 
 class WakeUpAndMakeCoffee(State):
+    def __init__(self, handler=False):
+        super(WakeUpAndMakeCoffee, self).__init__(handler=handler)
+
     def enter(self, wife):
         if wife.location != 'home':
             print("{}: Time to make some coffee for my ol' man.".format(wife.name))
@@ -213,6 +242,8 @@ class WakeUpAndMakeCoffee(State):
 
 
 class WashDishes(State):
+    def __init__(self, handler=False):
+        super(WashDishes, self).__init__(handler=handler)
 
     def enter(self, wife):
         print("{}: I tell ya, I made a mess!".format(wife.name))
@@ -220,7 +251,7 @@ class WashDishes(State):
 
     def execute(self, wife):
         wife.fatigue += 1
-        print ("{}: I don't mind washin' these here dishes, anything for my fella.".format(wife.name))
+        print("{}: I don't mind washin' these here dishes, anything for my fella.".format(wife.name))
         if wife.dishes_clean():
             wife.state_machine.change_state(iron_shirts)
         if wife.fatigue():
@@ -231,14 +262,16 @@ class WashDishes(State):
 
 
 class IronShirts(State):
+    def __init__(self, handler=False):
+        super(IronShirts, self).__init__(handler=handler)
 
     def enter(self, wife):
         wife.fatigue += 1
-        print ("{}: Ole dirty Bob needs some clean, ironed shirts. Diggin' fer nuggets makes'em dirty!".format(wife.name))
+        print("{}: Ole dirty Bob needs some clean, ironed shirts. Diggin' fer nuggets makes'em dirty!".format(wife.name))
         wife.location='home'
 
     def execute(self, wife):
-        print ("{}: Two 'er three shirts will be enough.".format(wife.name))
+        print("{}: Two 'er three shirts will be enough.".format(wife.name))
         if wife.shirts_clean():
             wife.state_machine.change_state(make_lunch)
         else:
@@ -249,22 +282,38 @@ class IronShirts(State):
 
 
 class MakeLunch(State):
+    def __init__(self, handler=True):
+        super(MakeLunch, self).__init__(handler=handler)
 
     def enter(self, wife):
-        wife.fatigue += 1
-        print ("{}: Gettin' a lil' hungry. I'm sure Bob would like some lunch too.".format(wife.name))
-        wife.location='home'
+        wife.location = 'home'
+        if not wife.cooking:
+            wife.fatigue += 1
+            print("{}: Puttin' the stew in the oven.".format(wife.name))
+            print("STEW MESSAGE SENT AT {}".format(datetime.now()))
+            wife.world.dispatcher.dispatch(timedelta(seconds=5), wife, wife, 'StewReady')
+            wife.cooking = True
 
     def execute(self, wife):
-        print("{}: I think some meatloaf sounds right nice!".format(wife.name))
-        if wife.lunch_made():
-            wife.state_machine.change_state(wash_dishes)
+        print("{}: Waitin on this stew!".format(wife.name))
+        # if wife.lunch_made():
+        #     wife.state_machine.change_state(wash_dishes)
 
     def exit(self, wife):
-        print ("{}: The day sure is movin' right along.".format(wife.name))
+        print("{}: The day sure is movin' right along.".format(wife.name))
+
+    def on_message(self, wife, telegram):
+        if telegram.msg == 'StewReady':
+            print("Message received by {} at {}".format(wife.name, datetime.now()))
+            print("Stew ready! Let's eat!")
+            wife.world.dispatcher.dispatch(0, wife, wife.husband, 'StewReady')
+            wife.cooking = False
+            wife.state_machine.change_state(iron_shirts)
 
 
 class WifeNap(State):
+    def __init__(self, handler=False):
+        super(WifeNap, self).__init__(handler=handler)
 
     def enter(self, wife):
         print("{}: Whew, keepin' up a house is hard work! Time fer a nap".format(wife.name))
@@ -279,6 +328,17 @@ class WifeNap(State):
     def exit(self, wife):
         pass
 
+
+class WifeGlobalState(State):
+    def __init__(self, handler=True):
+        super(WifeGlobalState, self).__init__(handler=handler)
+
+    def on_message(self, entity, telegram):
+        if telegram.msg == 'HiHoneyImHome':
+            print("Message handled by {} at {}".format(entity.name, datetime.now()))
+            print("Hi honey.  Let me make you some of mah fine country stew!")
+            entity.state_machine.change_state(make_lunch)
+
 enter_mine_and_dig_for_nugget = EnterMineAndDigForNugget()
 visit_bank_and_deposit_gold = VisitBankAndDepositGold()
 go_home_and_sleep_till_rested = GoHomeAndSleepTillRested()
@@ -290,3 +350,4 @@ wash_dishes = WashDishes()
 wife_nap = WifeNap()
 iron_shirts = IronShirts()
 make_lunch = MakeLunch()
+wife_global = WifeGlobalState()
