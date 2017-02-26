@@ -67,7 +67,6 @@ if __name__ == '__main__':
                                               30,
                                               'Poison Mushroom',
                                               'Tired and Thirsty'))
-            print("This looks safe to eat! Nope, wait, nevermind.".format(real_miner.name))
         if plant_roll in [1, 4] and counter % 3 == 0:
             world.entities.append(EnergyPlant(world,
                                               None, None, None,
@@ -75,7 +74,6 @@ if __name__ == '__main__':
                                               30,
                                               'Super Mushroom',
                                               'Energetic'))
-            print("I can hear colors now!".format(real_miner.name))
         if plant_roll == 2 and counter % 6 == 0:
             world.entities.append(UltraPlant(world,
                                              None, None, None,
