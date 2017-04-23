@@ -10,6 +10,7 @@ from entities.plant import PoisonPlant, EnergyPlant, UltraPlant, LiquidPlant
 from entities import MessageDispatcher
 
 pygame.init()
+clock = pygame.time.Clock()
 screen = pygame.display.set_mode((800, 800))
 old_map = pygame.image.load("C:/Users/mitoc/Desktop/westminer/World_Map.png")
 map = pygame.transform.scale(old_map, (800, 800))
@@ -65,7 +66,7 @@ while gameloop:
                             "lanky",
                             items.small_pickax)
 
-        world.entities.extend([real_miner, other_miner, miner_wife])
+        world.entities.extend([real_miner, other_miner])
         world.all_sprite_list.add(real_miner)
         world.all_sprite_list.draw(screen)
         world.all_sprite_list.update()
@@ -75,6 +76,7 @@ while gameloop:
         print("Game tick {}".format(counter))
         world.dispatcher.dispatch_delayed()
         world.update()
+        clock.tick(80)
         time.sleep(0.5)
 
         plant_roll = random.choice(plant_chance)

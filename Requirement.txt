@@ -1,0 +1,5 @@
+To run you will need to install the following:
+Pygame
+
+
+The program needed to alter the accompanied tmx file of the map is called TILED.
