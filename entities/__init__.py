@@ -1,6 +1,9 @@
 from datetime import datetime
 import heapq
+import pygame
 
+import travel
+from travel import traveling
 
 class BaseGameEntity:
     eid = 0
@@ -28,8 +31,11 @@ class StateMachine:
 
     def change_state(self, new_state):
         self.state_current.exit(self.entity)
+        self.state_previous = self.state_current
         self.state_current = new_state
+        #traveling(self.entity, self.state_previous, self.state_current)
         self.state_current.enter(self.entity)
+
 
     def update(self, entity, telegram=None):
         self.state_current.execute(entity)

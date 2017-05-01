@@ -1,3 +1,6 @@
+import pygame
+
+
 class World:
     def __init__(self, name, entities=None):
         self.name = name
@@ -5,9 +8,14 @@ class World:
         if entities is None:
             self.entities = []
 
+    all_sprite_list = pygame.sprite.Group()
+
     def update(self):
         for entity in self.entities:
+
             entity.update()
+            pygame.display.update()
+
 
     def get_entity(self, eid):
         return next((entity for entity in self.entities
@@ -20,3 +28,4 @@ class World:
             self.entities.pop(self.entities.index(entity))
             return entity
         return entity
+

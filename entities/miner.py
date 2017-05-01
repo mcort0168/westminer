@@ -1,15 +1,21 @@
 from . import BaseGameEntity, StateMachine
+import pygame
 
 
-class Miner(BaseGameEntity):
+class Miner(BaseGameEntity,  pygame.sprite.Sprite):
     """The Miner game object
 
     """
 
     def __init__(self, world, name, state_global, state_current, state_previous, location, gold_carried, gold_bank, thirst, fatigue, build, pickax, wife=None):
         super(Miner, self).__init__(world)
+        pygame.sprite.Sprite.__init__(self)
         self.name = name
+        self.image = pygame.image.load("miner/minerback.png")
+        self.rect = self.image.get_rect()
+        self.old_location = ""
         self.location = location
+        self.new_location = ""
         self.gold_carried = gold_carried
         self.gold_bank = gold_bank
         self.thirst = thirst
@@ -34,6 +40,7 @@ class Miner(BaseGameEntity):
     def update(self):
         self.thirst += 1
         self.state_machine.update(self)
+        pygame.display.flip()
 
     def handle_message(self, telegram):
         self.state_machine.handle_message(telegram)

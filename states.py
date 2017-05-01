@@ -1,8 +1,10 @@
 from datetime import datetime, timedelta
 import random
+import pygame
 
+import world
 import items
-
+import images
 
 class State:
     def __init__(self, handler=False):
@@ -29,6 +31,9 @@ class EnterMineAndDigForNugget(State):
             miner.location = 'goldmine'
 
     def execute(self, miner):
+        miner.image = images.mine
+        miner.rect.x = 400
+        miner.rect.y = 0
         r = random.random() - miner.pickax.luck
         if r < 0.25:
             miner.gold_carried += 4
@@ -52,12 +57,15 @@ class EnterMineAndDigForNugget(State):
             print("Miner {}: NO NUGGETS!? I'm gonna be here all day at this rate".format(miner.name))
 
         if miner.pockets_full():
-            miner.state_machine.change_state(visit_bank_and_deposit_gold)
+            miner.state_machine.change_state(traveling)
+            miner.new_location = "bank"
         elif miner.thirsty():
-            miner.state_machine.change_state(quench_thirst)
+            miner.state_machine.change_state(traveling)
+            miner.new_location = "saloon"
 
     def exit(self, miner):
         print("Miner {}: Ah'm leavin' the gold mine with mah pockets full o'sweet gold".format(miner.name))
+        miner.old_location = "goldmine"
 
 
 class VisitBankAndDepositGold(State):
@@ -70,33 +78,43 @@ class VisitBankAndDepositGold(State):
             miner.location = 'bank'
 
     def execute(self, miner):
+        miner.image = images.deposit
+        miner.rect.x = 455
+        miner.rect.y = 600
         miner.gold_bank += miner.gold_carried
         miner.gold_carried = 0
         print("Miner {}: Depositin' gold. Total savings now: {}".format(miner.name,
                                                                        miner.gold_bank))
         if miner.gold_bank > 10:
             print("Miner {}: Woohoo! Rich enough for now. Back home to mah li'l lady".format(miner.name))
-            miner.state_machine.change_state(go_home_and_sleep_till_rested)
+            miner.state_machine.change_state(traveling)
+            miner.new_location = "home"
         elif miner.thirsty():
-            miner.state_machine.change_state(quench_thirst)
+            miner.state_machine.change_state(traveling)
+            miner.new_location = "saloon"
         if miner.gold_bank > 50:
             print("Miner {}: Woohoo! Rich enough for now. Back home to mah li'l lady".format(miner.name))
-            miner.state_machine.change_state(go_home_and_sleep_till_rested)
+            miner.state_machine.change_state(traveling)
+            miner.new_location = "home"
         if miner.gold_bank >= 10:
             if miner.pickax.strength < 3:
-                miner.state_machine.change_state(go_shopping)
+                miner.state_machine.change_state(traveling)
+                miner.new_location = "shop"
             else:
                 pass
         if miner.gold_bank >= 15:
             if miner.pickax.strength < 4:
-                miner.state_machine.change_state(go_shopping)
+                miner.state_machine.change_state(traveling)
+                miner.new_location = "shop"
             else:
                 pass
         else:
-            miner.state_machine.change_state(enter_mine_and_dig_for_nugget)
+            miner.state_machine.change_state(traveling)
+            miner.new_location = "goldmine"
 
     def exit(self, miner):
         print("Miner {}: Leavin' the bank".format(miner.name))
+        miner.old_location = "bank"
 
 
 class GoHomeAndSleepTillRested(State):
@@ -106,6 +124,9 @@ class GoHomeAndSleepTillRested(State):
     def enter(self, miner):
         if miner.location != 'home':
             miner.location = 'home'
+            miner.image = images.sleep
+            miner.rect.x = 400
+            miner.rect.y = 784
             if miner.wife is not None:
                 print("Miner {}: Going Home to see my lil' lady".format(miner.name))
                 miner.world.dispatcher.dispatch(0, miner, miner.wife, 'HiHoneyImHome')
@@ -118,13 +139,18 @@ class GoHomeAndSleepTillRested(State):
         if miner.is_tired():
             miner.state_machine.change_state(go_home_and_sleep_till_rested)
             print("Miner {}: Just 5 more minutes...".format(miner.name))
+            miner.new_location = "home"
+        elif miner.thirsty():
             miner.state_machine.change_state(quench_thirst)
+            miner.new_location = "saloon"
         else:
             miner.state_machine.change_state(enter_mine_and_dig_for_nugget)
+            miner.new_location = "goldmine"
 
     def exit(self, miner):
         print("Miner {}: Good mornin'! Another day, another nugget!".format(miner.name))
-        
+        miner.old_location = "home"
+
 
 class QuenchThirst(State):
     def __init__(self, handler=False):
@@ -137,9 +163,13 @@ class QuenchThirst(State):
 
     def execute(self, miner):
         if miner.gold_carried == 0:
+            miner.image = images.drink
+            miner.rect.x = 360
+            miner.rect.y = 500
             print("Barkeep: You dirty bum, I'm callin' the sheriff!")
             miner.status = 'arrested'
             miner.state_machine.change_state(jail)
+            miner.new_location = "jail"
         else:
             print("Miner {}: That's some fine sippin' liquer.".format(miner.name))
             miner.fatigue += 1
@@ -148,13 +178,17 @@ class QuenchThirst(State):
             print("Miner {}: Whew! That really wet my whistle".format(miner.name))
 
             if miner.is_tired():
-                miner.state_machine.change_state(go_home_and_sleep_till_rested)
+                miner.state_machine.change_state(traveling)
+                miner.new_location = "home"
             elif miner.pockets_full():
-                miner.state_machine.change_state(visit_bank_and_deposit_gold)
+                miner.state_machine.change_state(traveling)
+                miner.new_location = "goldmine"
             else:
-                miner.state_machine.change_state(enter_mine_and_dig_for_nugget)
+                miner.state_machine.change_state(traveling)
+                miner.new_location = "goldmine"
 
     def exit(self, miner):
+        miner.old_location = "saloon"
         if miner.status == 'arrested':
             print("Miner {}: You'll never catch me!".format(miner.name))
         else:
@@ -173,16 +207,21 @@ class Jail(State):
     def execute(self, miner):
         miner.fatigue = 0
         miner.thirst = 0
+        miner.image = images.jail
+        miner.rect.x = 455
+        miner.rect.y = 450
         print("Miner {}: Sittin' in jail".format(miner.name))
         miner.counter_jail += 1
         if miner.counter_jail >= 3:
-            miner.state_machine.change_state(enter_mine_and_dig_for_nugget)
+            miner.state_machine.change_state(traveling)
+            miner.new_location = "goldmine"
 
     def exit(self, miner):
         miner.counter_jail = 0
         miner.status = 'free'
         print("Miner {}: I'm bustin' outta this joint!".format(miner.name))
         print("Miner {}: Gotta Get back to it!".format(miner.name))
+        miner.old_location = "jail"
 
 
 class GoShopping(State):
@@ -190,33 +229,182 @@ class GoShopping(State):
         super(GoShopping, self).__init__(handler=handler)
 
     def enter(self, miner):
-        if miner.location != "shop":
-            print("Miner {}: Woohoo time to go shoppin' for a new pickax!".format(miner.name))
-            miner.location = "shop"
+        print("Miner {}: Woohoo time to go shoppin' for a new pickax!".format(miner.name))
+        miner.location = "shop"
 
     def execute(self, miner):
         miner.fatigue += 1
+        miner.image = False
+        miner.image = images.deposit
+        miner.rect.x = 360
+        miner.rect.y = 630
         print("Miner {}: Let's see which one should ah' choose?".format(miner.name))
         if miner.gold_bank >= 10:
             if miner.pickax.strength < 3:
                 miner.pickax = items.pickax
                 print("Miner {}: woohoo I got me a brand spankin' new pickax!".format(miner.name))
                 miner.gold_bank -= 10
+                miner.state_machine.change_state(traveling)
+                miner.new_location = "goldmine"
             else:
-                pass
-        if miner.gold_bank >= 15:
+                miner.state_machine.change_state(traveling)
+                miner.new_location = "goldmine"
+        elif miner.gold_bank >= 15:
             if miner.pickax.strength < 4:
                 miner.pickax = items.big_pickax
                 print("Miner {}: Alrighty I'll be swimmin' in gold now that I got me a big pickax!".format(miner.name))
                 miner.gold_bank -= 15
+                miner.state_machine.change_state(traveling)
+                miner.new_location = "goldmine"
             else:
-                pass
+                miner.state_machine.change_state(traveling)
+                miner.new_location = "goldmine"
         else:
-            miner.state_machine.change_state(enter_mine_and_dig_for_nugget)
+            miner.state_machine.change_state(traveling)
+            miner.new_location = "goldmine"
 
     def exit(self, miner):
         print("Miner {}: Can't wait to try out my new {}".format(miner.name, miner.pickax.name))
+        miner.old_location = "shop"
 
+
+class Traveling(State):
+    def __init__(self, handler=False):
+        super(Traveling, self).__init__(handler=handler)
+
+    def enter(self, miner):
+        miner.location = "traveling"
+        print("Miner {}: Time to stretch mah legs!".format(miner.name))
+
+    def execute(self, miner):
+        if miner.old_location == "goldmine":
+            miner.rect.y = 32
+            miner.rect.x = 400
+            miner.image = images.miner_front
+            if miner.new_location == "bank":
+                while miner.rect.y != 600:
+                    miner.rect.y += 1
+                    pygame.display.update()
+                    if miner.rect.y == 600:
+                        miner.image = images.miner_right
+                        miner.state_machine.change_state(visit_bank_and_deposit_gold)
+            if miner.new_location == "saloon":
+                while miner.rect.y != 500:
+                    pygame.display.update()
+                    miner.rect.y += 1
+                    if miner.rect.y == 500:
+                        miner.image = images.miner_left
+                        miner.state_machine.change_state(quench_thirst)
+        if miner.old_location == "bank":
+            miner.rect.y = 600
+            miner.rect.x = 442
+            miner.image = images.miner_left
+            if miner.new_location == "goldmmine":
+                miner.image = images.miner_front
+                while miner.rect.y != 784:
+                    pygame.display.update()
+                    miner.rect.y += 1
+                    if miner.rect.y == 784:
+                        miner.image = images.sleep
+                        miner.state_machine.change_state(go_home_and_sleep_till_rested)
+            if miner.new_location == "saloon":
+                miner.image = images.miner_back
+                while miner.rect.y != 500:
+                    pygame.display.update()
+                    miner.rect.y -= 1
+                    if miner.rect.y == 500:
+                        miner.image = images.miner_left
+                        miner.state_machine.change_state(quench_thirst)
+            if miner.new_location == "shop":
+                miner.image = images.miner_left
+                while miner.rect.x != 376:
+                    pygame.display.update()
+                    miner.rect.x -= 1
+                    if miner.rect.x == 376:
+                        miner.state_machine.change_state(go_shopping)
+            if miner.new_location == "goldmine":
+                while miner.rect.y != 24:
+                    pygame.display.update()
+                    miner.rect.y -= 1
+                    if miner.rect.y == 24:
+                        miner.state_machine.change_state(enter_mine_and_dig_for_nugget)
+        if miner.old_location == "home":
+            miner.rect.y = 784
+            miner.rect.x = 400
+            miner.image = images.miner_back
+            if miner.new_location == "saloon":
+                while miner.rect.y != 500:
+                    pygame.display.update()
+                    miner.rect.y -= 1
+                    if miner.rect.y == 500:
+                        miner.image = images.miner_left
+                        miner.state_machine.change_state(quench_thirst)
+            if miner.new_location == "goldmine":
+                while miner.rect.y != 24:
+                    pygame.display.update()
+                    miner.rect.y -= 1
+                    if miner.rect.y == 24:
+                        miner.state_machine.change_state(enter_mine_and_dig_for_nugget)
+        if miner.old_location == "saloon":
+            miner.rect.y = 500
+            miner.rect.x = 376
+            miner.image = images.miner_right
+            if miner.new_location == "jail":
+                miner.image = images.miner_back
+                while miner.rect.y != 450:
+                    pygame.display.update()
+                    miner.rect.y -= 1
+                    if miner.rect.y == 450:
+                        miner.image = images.miner_right
+                        miner.state_machine.change_state(jail)
+            if miner.new_location == "home":
+                miner.image = images.miner_front
+                while miner.rect.y != 784:
+                    pygame.display.update()
+                    miner.rect.y += 1
+                    if miner.rect.y == 784:
+                        miner.state_machine.change_state(go_home_and_sleep_till_rested)
+            if miner.new_location == "bank":
+                miner.image = images.miner_front
+                while miner.rect.y != 600:
+                    pygame.display.update()
+                    miner.rect.y += 1
+                    if miner.rect.y == 600:
+                        miner.image = images.miner_right
+                        miner.state_machine.change_state(visit_bank_and_deposit_gold)
+            if miner.new_location == "goldmine":
+                miner.image = images.miner_back
+                while miner.rect.y != 24:
+                    miner.rect.y -= 1
+                    if miner.rect.y == 24:
+                        miner.state_machine.change_state(enter_mine_and_dig_for_nugget)
+        if miner.old_location == "jail":
+            miner.rect.y = 450
+            miner.rect.x = 442
+            miner.image = images.miner_left
+            if miner.new_location == "goldmine":
+                miner.image = images.miner_back
+                while miner.rect.y != 24:
+                    pygame.display.update()
+                    miner.rect.y -= 1
+                    if miner.rect.y == 24:
+                        miner.state_machine.change_state(enter_mine_and_dig_for_nugget)
+        if miner.old_location == "shop":
+            miner.rect.y = 630
+            miner.rect.x = 344
+            miner.image = images.miner_right
+            if miner.new_location == "goldmine":
+                miner.image = images.miner_back
+                while miner.rect.y != 24:
+                    pygame.display.update()
+                    miner.rect.y -= 1
+                    if miner.rect.y == 24:
+                        miner.state_machine.change_state(enter_mine_and_dig_for_nugget)
+
+    def exit(self, miner):
+        print("Miner {}: I'm here!".format(miner.name))
+        miner.location = miner.new_location
+        miner.new_location = ""
 
 class WakeUpAndMakeCoffee(State):
     def __init__(self, handler=False):
@@ -345,9 +533,11 @@ go_home_and_sleep_till_rested = GoHomeAndSleepTillRested()
 quench_thirst = QuenchThirst()
 jail = Jail()
 go_shopping = GoShopping()
+traveling = Traveling()
 wake_up_and_make_coffee = WakeUpAndMakeCoffee()
 wash_dishes = WashDishes()
 wife_nap = WifeNap()
 iron_shirts = IronShirts()
 make_lunch = MakeLunch()
 wife_global = WifeGlobalState()
+
