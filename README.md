@@ -65,6 +65,17 @@ for gold.
   5. Once he has bought himself a new pickax he will then change states to go try out his new pickax by going directly
   to the gold mine.
 
+6. Traveling
+  1. Similar to the other states it contains an enter, execute, and exit how ever instead of having the miner collect
+  anything the purpose of this state is to visually represent the miner's transition from one state to another or in
+  this case from one building to another.
+  2. The state begins by taking into account the miner's old location to define his new position on the map and then
+  his new position to define the path he'll be taking to reach his new destination.
+  3. Along with this should the miner need to to turn and face the building before he enters it will load the
+  appropriate image for the miner just before he changes to the appropriate state for his new location.
+  * There are currently a few errors with the miner's movements as the interval between execution and changing states
+  to be too short and makes the miner hop around on the map.
+
 Items
 Along with various states there are items the miner can use to alter certain stats or occurrences that happen during
 the state he is in. The items themselves are classes which hold inside them the variables for the items that affect the
